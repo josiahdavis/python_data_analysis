@@ -149,8 +149,6 @@ ufo.head()
 ufo.rename(columns={'Colors Reported':'Colors', 'Shape Reported':'Shape'}, inplace=True)
 ufo.head()
 
-ufo2 = ufo.rename(columns={'Colors':'Color'})
-
 # hide a column (temporarily)
 ufo.drop(['Location'], axis=1)
 ufo[ufo.columns[:-1]]
@@ -422,6 +420,8 @@ EXERCISE: Working with drinks data
 # Count the number of occurrences of each 'continent' value and see if it looks correct
 
 
+# Determine which countries do not have continent designations
+
 '''
 SOLUTIONS: Working with drinks data
 '''
@@ -462,3 +462,6 @@ drinks[drinks.beer_servings==drinks.beer_servings.max()].country
 
 # Count the number of occurrences of each 'continent' value and see if it looks correct
 drinks.continent.value_counts()
+
+# Determine which countries do not have continent designations
+drinks[drinks.continent.isnull()].country
