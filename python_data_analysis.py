@@ -20,7 +20,7 @@ Spyder Reference (Windows):
 Reading, Summarizing data
 '''
 
-import pandas as pd
+import pandas as pd  # This line imports an (already installed) python package
 import numpy as np
 
 # Running this next line of code assumes that your console working directory is set up correctly 
@@ -28,7 +28,6 @@ import numpy as np
 #        1) Put the data and the script in the same working directory
 #        2) Select the options buttom in the upper right hand cornder of the editor
 #        3) Select "Set console working directory"
-
 
 ufo = pd.read_csv('ufo_sightings.csv')
 
