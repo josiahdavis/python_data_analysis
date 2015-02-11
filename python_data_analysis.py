@@ -252,6 +252,8 @@ ufo.head()
 ufo.loc['1995']
 ufo.loc['1995-01']
 ufo.loc['1995-01-01']
+ufo.loc[['1995-01-01', '1995-02-01']]
+
 
 # Access range of times/ranges
 ufo.loc['1995':]
@@ -367,35 +369,11 @@ Plotting
 # Plot the number of sightings over time
 ufo.groupby('Year').City.count().plot(kind='line', color='r', linewidth=3)
 
-# Plot the number of sightings over the time of day
+# Plot the number of sightings over the day of week and time of day
 ufo.groupby(['Weekday','Hour']).City.count().unstack(0).plot(kind='line', linewidth=3)
 
-# bar plot of UFOs in July 2014 (remove)
-ufo.Shape.value_counts().plot(kind='bar', title='Sightings per shape')
-
-ufo.loc['2014-07'].Day.value_counts().plot(kind='bar', title='Sightings per day')
-
-'''
-EXERCISE:   Plot the number of UFOs by day
-BONUS:      Plot the number of UFOs by the time of day, for each weekday
-'''
-
-# Plot the number of sightings over time of day
-ufo['Hour'] = ufo.index.hour
-
-# Split up the plot by days of the week
-ufo['Weekday'] = ufo.index.weekday
-col = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
-for i in range(7):    
-    ufo[ufo.Weekday == i].groupby(['Hour']).City.count().plot(linewidth=2, colors = col[i])
-
-'''
-EXERCISE:   Plot the number of sightings by day of the month for 
-            the last 5 months of July
-BONUS:      Repeat with each year as an individual line
-'''
-
-
+# Plot the sightings in in July 2014
+ufo.loc['2014-07'].Day.value_counts(sort=False).plot(kind='bar', title='Sightings in July')
 
 
 '''
