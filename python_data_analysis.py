@@ -36,7 +36,6 @@ Reading, Summarizing data
 
 import pandas as pd
 import numpy as np
-import matplotlib.pylab as plt
 
 # Running this next line of code assumes that your console working directory is set up correctly 
 # To set up your working directory
@@ -120,10 +119,10 @@ ufo.duplicated(['State','Time']).sum()          # columns for identifying duplic
 
 '''
 EXERCISE: 
-- Read in the dataset if you haven't already
+- Read in the dataset
 - Find the frequency of UFO sightings by shape
-- Calculate the top three most common color(s) of the typical UFO
-- Determine the top 20 locations for ufo sightings
+- Determine the top three most common colors of the typical UFO
+- Determine the best cities in Virginia to see UFOs
 '''
 # Shape
 ufo['Shape Reported'].value_counts()
@@ -331,6 +330,12 @@ ufo['State'] = ufo['State'].str.upper()
 ufo = pd.merge(ufo, pop, on='State', how = 'left')
 
 '''
+Writing Data
+'''
+ufo.to_csv('ufo_new.csv')               # First column is an index
+ufo.to_csv('ufo_new.csv', index=False)  # First column is no longer index
+
+'''
 Plotting
 '''
 
@@ -368,17 +373,50 @@ EXERCISE:   Plot the number of sightings by day of the month for
 BONUS:      Repeat with each year as an individual line
 '''
 
-ufo['Day'] = ufo.index.day
-ufo['Month'] = ufo.index.month
-ufo[(ufo.Year >= 2010) & (ufo.Month == 7)].groupby('Day').Year.count().plot()
 
-for i in range(5):
-    ufo[(ufo.Year == 2010 + i) & (ufo.Month == 7)].groupby('Day').Year.count().plot(linewidth = 2, colors = col[i])
+
 
 '''
-Writing Data
+EXERCISE: Working with drinks data
 '''
-ufo.to_csv('ufo_new.csv')
+
+# Read drinks.csv into a DataFrame called 'drinks' (use the default index)
+drinks = pd.read_table('../data/drinks.csv', sep=',')
+drinks = pd.read_csv('../data/drinks.csv')              # equivalent
+
+# Print the first 10 rows
+drinks.head(10)
+
+# Examine the data types of all columns
+drinks.dtypes
+drinks.info()
+
+# Print the 'beer_servings' Series
+drinks.beer_servings
+drinks['beer_servings']
+
+# Calculate the average 'beer_servings' for the entire dataset
+drinks.describe()                   # summarize all numeric columns
+drinks.beer_servings.describe()     # summarize only the 'beer_servings' Series
+drinks.beer_servings.mean()         # only calculate the mean
+
+# Print all columns, but only show rows where the country is in Europe
+drinks[drinks.continent=='EU']
+
+# Calculate the average 'beer_servings' for all of Europe
+drinks[drinks.continent=='EU'].beer_servings.mean()
+
+# Only show European countries with 'wine_servings' greater than 300
+drinks[(drinks.continent=='EU') & (drinks.wine_servings > 300)]
+
+# Determine which 10 countries have the highest 'total_litres_of_pure_alcohol'
+drinks.sort_index(by='total_litres_of_pure_alcohol').tail(10)
+
+# Determine which country has the highest value for 'beer_servings'
+drinks[drinks.beer_servings==drinks.beer_servings.max()].country
+
+# Count the number of occurrences of each 'continent' value and see if it looks correct
+drinks.continent.value_counts()
 
 
 '''
