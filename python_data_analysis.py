@@ -1,33 +1,19 @@
 '''
 Data Analysis in Python
-===================================
-    - Spyder Basics
-    - Reading, Summarizing data
-    - Slicing / Filtering
-    - Modifying Columns
-    - Handling Missing Values
-    - Indexing
-    - Analyzing across time
-    - Split-Apply-Combine
-    - Merging data
-    - Plotting
-    - Bonus Content
+
+    UFO data
+    Scraped from: http://www.nuforc.org/webreports.html
+    
+    Drinks data
+    Downloaded from: https://github.com/fivethirtyeight/data/tree/master/alcohol-consumption
 '''
 
 '''
-Spyder Basics:
-    Keystrokes
-    Console / Editor
-    IPython vs. Python Interpreter
-    Setting the Working Directory
-    Customizing the display
-
-
-Key-strokes I will use:
-    Ctrl + L:       Clears the console
-    Ctrl + Enter:   Runs the line of code
-    Ctrl + S:       Saves the file
-    Up-arrow:       Retreives previous commands              
+Spyder Reference (Windows):
+    Ctrl + L        (in the console):       Clears the console
+    Up/Down-arrows  (in the console):       Retreives previous commands
+    Ctrl + Enter    (in the editor):        Runs the line of code
+    Ctrl + S        (in the editor):        Saves the file              
 '''
 
 '''
@@ -42,7 +28,7 @@ import numpy as np
 #        1) Put the data and the script in the same working directory
 #        2) Select the options buttom in the upper right hand cornder of the editor
 #        3) Select "Set console working directory"
-# The working directory can also be set programatically with the os module
+
 
 ufo = pd.read_csv('ufo_sightings.csv')
 
@@ -118,26 +104,6 @@ ufo_unique = ufo[~ufo.duplicated()]             # only show unique rows
 ufo.duplicated(['State','Time']).sum()          # columns for identifying duplicates
 
 '''
-EXERCISE: 
-- Read in the dataset
-- Find the frequency of UFO sightings by shape
-- Determine the top three most common colors of the typical UFO
-- Determine the best cities in Virginia to see UFOs
-'''
-
-# Read in the dataset
-ufo = pd.read_csv('ufo_sightings.csv')
-
-# Find the frequency of UFO sightings by shape
-ufo['Shape Reported'].value_counts().order(ascending=False)
-
-# Determine the top three most common colors of the typical UFO
-ufo['Colors Reported'].value_counts()[:3]
-
-# Determine the five cities in Virginia with the most UFO sightings
-ufo[ufo.State == 'VA'].City.value_counts()[:5]
-
-'''
 Modifying Columns
 '''
 
@@ -184,204 +150,6 @@ ufo.dropna(how='all')    # drop a row only if ALL values are missing
 # fill in missing values
 ufo.Colors.fillna(value='Unknown', inplace=True)
 ufo.fillna('Unknown')
-
-
-'''
-Indexing
-'''
-
-# Create a new index
-ufo.set_index('State', inplace=True)
-ufo.head()
-ufo.index
-ufo.index.is_unique
-
-# Slice using the index
-ufo.loc['WY',:]
-ufo.loc[['ND', 'WY'],:]
-ufo.loc['ND':'WY',:]                # Error because of sorting
-ufo.sort_index(inplace=True)
-ufo.loc['ND':'WY',:]
-
-
-# Reset the index
-ufo.reset_index(inplace=True)
-
-# Create a multi-index
-ufo.set_index(['State', 'City'], inplace=True)
-ufo.sort_index(inplace=True)
-ufo
-ufo.index
-
-# Slice using the multi-index
-ufo.loc[['ND', 'WY'],:]
-ufo.loc['ND':'WY',:]
-ufo.loc[('ND', 'Bismarck'),:]
-ufo.loc[('ND', 'Bismarck'):('ND','Casselton'),:]
-
-'''
-Analyzing across time
-'''
-
-# Reset the index
-ufo.reset_index(inplace=True)
-
-# Convert Time column to date-time format (defined in Pandas)
-# transforming to time
-# Formatting Time: https://docs.python.org/2/library/time.html#time.strftime
-ufo.dtypes
-ufo['Time'] = pd.to_datetime(ufo['Time'], format="%m/%d/%Y %H:%M")
-ufo.dtypes
-
-# Compute date range
-ufo.Time.min()
-ufo.Time.max()
-
-# Slice using time
-ufo[ufo.Time > pd.datetime(1995, 1, 1)]
-ufo[(ufo.Time > pd.datetime(1995, 1, 1)) & (ufo.State =='TX')]
-
-# Set the index to time
-ufo.set_index('Time', inplace=True)
-ufo.sort_index(inplace=True)
-ufo.head()
-
-# Access particular times/ranges
-ufo.loc['1995']
-ufo.loc['1995-01']
-ufo.loc['1995-01-01']
-ufo.loc[['1995-01-01', '1995-02-01']]
-
-
-# Access range of times/ranges
-ufo.loc['1995':]
-ufo.loc['1995':'1996']
-ufo.loc['1995-12-01':'1996-01']
-
-# Access elements of the timestamp
-# Date Componenets: http://pandas.pydata.org/pandas-docs/stable/timeseries.html#time-date-components
-ufo.index.year
-ufo.index.month
-ufo.index.weekday
-ufo.index.day
-ufo.index.time
-ufo.index.hour
-
-# Create a new variable with time element
-ufo['Year'] = ufo.index.year
-ufo['Day'] = ufo.index.day
-ufo['Weekday'] = ufo.index.weekday
-ufo['Hour'] = ufo.index.hour
-
-'''
-Split-Apply-Combine
-'''
-
-# for each year, calculate the count of sightings
-ufo.groupby('Hour').City.count()
-ufo.Hour.value_counts()             # Same as before
-
-# for each Shape, calculate the first sighting, last sighting, and range of sightings. 
-ufo.groupby('Shape').Year.min()
-ufo.groupby('Shape').Year.max()
-
-# Specify the variable outside of the apply statement
-ufo.groupby('Shape').Year.apply(lambda x: x.max())
-
-# Specifiy the variable within the apply statement
-ufo.groupby('Shape').apply(lambda x: x.Year.max() - x.Year.min())
-
-# Specify a custom function to use in the apply statement
-def get_max_year(df):
-    try:
-        return df.Year.max()
-    except:
-        return ''
-        
-ufo.groupby('Shape').apply(lambda x: get_max_year(x))
-
-# split/combine can occur on multiple columns at the same time
-# for each Weekday / Hour combination, determine first sighting
-ufo.groupby(['Weekday','Hour']).City.count()
-
-
-'''
-Merging data
-'''
-
-# Read in population data
-
-pop = pd.read_csv('population.csv')
-pop.head()
-
-ufo.head()
-
-# Merge the data together
-ufo = pd.merge(ufo, pop, on='State', how = 'left')
-
-# Specify keys if columns have different names
-ufo = pd.merge(ufo, pop, left_on='State', right_on='State', how = 'left')
-
-# Observe the new Population column
-ufo.head()
-
-# Check for values that didn't make it (length)
-len(ufo[ufo.Population.isnull()])
-
-# Check for values that didn't make it (values)
-ufo[ufo.Population.isnull()]
-
-# Change the records that didn't match up using np.where command
-ufo['State'] = np.where(ufo['State'] == 'Fl', 'FL', ufo['State'])
-
-# Alternatively, change the state using native python string functionality
-ufo['State'] = ufo['State'].str.upper()
-
-# Merge again, this time get all of the records
-ufo = pd.merge(ufo, pop, on='State', how = 'left')
-
-'''
-Writing Data
-'''
-ufo.to_csv('ufo_new.csv')               # First column is an index
-ufo.to_csv('ufo_new.csv', index=False)  # First column is no longer index
-
-'''
-Other useful features
-'''
-
-# map values to other values
-ufo['Weekday'] = ufo.Weekday.map({  0:'Mon', 1:'Tue', 2:'Wed', 
-                                    3:'Thu', 4:'Fri', 5:'Sat', 
-                                    6:'Sun'})
-
-# Pivot rows to columns
-ufo.groupby(['Weekday','Hour']).City.count()
-ufo.groupby(['Weekday','Hour']).City.count().unstack(0) # Make first row level a column
-ufo.groupby(['Weekday','Hour']).City.count().unstack(1) # Make second row level a column
-
-# randomly sample a DataFrame
-idxs = np.random.rand(len(ufo)) < 0.66   # create a Series of booleans
-train = ufo[idxs]                        # will contain about 66% of the rows
-test = ufo[~idxs]                        # will contain the remaining rows
-
-# replace all instances of a value (supports 'inplace=True' argument)
-ufo.Shape.replace('DELTA', 'TRIANGLE')   # replace values in a Series
-ufo.replace('PYRAMID', 'TRIANGLE')       # replace values throughout a DataFrame
-
-'''
-Plotting
-'''
-
-# Plot the number of sightings over time
-ufo.groupby('Year').City.count().plot(kind='line', color='r', linewidth=2)
-
-# Plot the number of sightings over the day of week and time of day
-ufo.groupby(['Weekday','Hour']).City.count().unstack(0).plot(kind='line', linewidth=2)
-
-# Plot the sightings in in July 2014
-ufo.loc['2014-07'].Day.value_counts(sort=False).plot(kind='bar', title='Sightings in July')
-
 
 '''
 EXERCISE: Working with drinks data
@@ -465,3 +233,212 @@ drinks.continent.value_counts()
 
 # Determine which countries do not have continent designations
 drinks[drinks.continent.isnull()].country
+
+'''
+Indexing
+'''
+
+# Create a new index
+ufo.set_index('State', inplace=True)
+ufo.head()
+ufo.index
+ufo.index.is_unique
+
+# Slice using the index
+ufo.loc['WY',:]
+ufo.loc[['ND', 'WY'],:]
+ufo.loc['ND':'WY',:]                # Error because of sorting
+ufo.sort_index(inplace=True)
+ufo.loc['ND':'WY',:]
+
+
+# Reset the index
+ufo.reset_index(inplace=True)
+
+# Create a multi-index
+ufo.set_index(['State', 'City'], inplace=True)
+ufo.sort_index(inplace=True)
+ufo
+ufo.index
+
+# Slice using the multi-index
+ufo.loc[['ND', 'WY'],:]
+ufo.loc['ND':'WY',:]
+ufo.loc[('ND', 'Bismarck'),:]
+ufo.loc[('ND', 'Bismarck'):('ND','Casselton'),:]
+
+'''
+Analyzing across time
+'''
+
+# Reset the index
+ufo.reset_index(inplace=True)
+
+# Convert Time column to date-time format (defined in Pandas)
+# transforming to time
+# Formatting Time: https://docs.python.org/2/library/time.html#time.strftime
+ufo.dtypes
+ufo['Time'] = pd.to_datetime(ufo['Time'], format="%m/%d/%Y %H:%M")
+ufo.dtypes
+
+# Compute date range
+ufo.Time.min()
+ufo.Time.max()
+
+# Slice using time
+ufo[ufo.Time > pd.datetime(1995, 1, 1)]
+ufo[(ufo.Time > pd.datetime(1995, 1, 1)) & (ufo.State =='TX')]
+
+# Set the index to time
+ufo.set_index('Time', inplace=True)
+ufo.sort_index(inplace=True)
+ufo.head()
+
+# Access particular times/ranges
+ufo.loc['1995',:]
+ufo.loc['1995-01',:]
+ufo.loc['1995-01-01',:]
+
+
+# Access range of times/ranges
+ufo.loc['1995':]
+ufo.loc['1995':'1996']
+ufo.loc['1995-12-01':'1996-01']
+
+# Access elements of the timestamp
+# Date Componenets: http://pandas.pydata.org/pandas-docs/stable/timeseries.html#time-date-components
+ufo.index.year
+ufo.index.month
+ufo.index.weekday
+ufo.index.day
+ufo.index.time
+ufo.index.hour
+
+# Create a new variable with time element
+ufo['Year'] = ufo.index.year
+ufo['Month'] = ufo.index.month
+ufo['Day'] = ufo.index.day
+ufo['Weekday'] = ufo.index.weekday
+ufo['Hour'] = ufo.index.hour
+
+'''
+Split-Apply-Combine
+'''
+
+# for each year, calculate the count of sightings
+ufo.groupby('Hour').City.count()
+ufo.Hour.value_counts()             # Same as before
+
+# for each Shape, calculate the first sighting, last sighting, and range of sightings. 
+ufo.groupby('Shape').Year.min()
+ufo.groupby('Shape').Year.max()
+
+# Specify the variable outside of the apply statement
+ufo.groupby('Shape').Year.apply(lambda x: x.max())
+
+# Specifiy the variable within the apply statement
+ufo.groupby('Shape').apply(lambda x: x.Year.max() - x.Year.min())
+
+# Specify a custom function to use in the apply statement
+def get_max_year(df):
+    try:
+        return df.Year.max()
+    except:
+        return ''
+        
+ufo.groupby('Shape').apply(lambda x: get_max_year(x))
+
+# split/combine can occur on multiple columns at the same time
+# for each Weekday / Hour combination, determine first sighting
+ufo.groupby(['Weekday','Hour']).City.count()
+
+'''
+Merging data
+'''
+
+# Read in population data
+
+pop = pd.read_csv('population.csv')
+pop.head()
+
+ufo.head()
+
+# Merge the data together
+ufo = pd.merge(ufo, pop, on='State', how = 'left')
+
+# Specify keys if columns have different names
+ufo = pd.merge(ufo, pop, left_on='State', right_on='State', how = 'left')
+
+# Observe the new Population column
+ufo.head()
+
+# Check for values that didn't make it (length)
+len(ufo[ufo.Population.isnull()])
+
+# Check for values that didn't make it (values)
+ufo[ufo.Population.isnull()]
+
+# Change the records that didn't match up using np.where command
+ufo['State'] = np.where(ufo['State'] == 'Fl', 'FL', ufo['State'])
+
+# Alternatively, change the state using native python string functionality
+ufo['State'] = ufo['State'].str.upper()
+
+# Merge again, this time get all of the records
+ufo = pd.merge(ufo, pop, on='State', how = 'left')
+
+'''
+Writing Data
+'''
+ufo.to_csv('ufo_new.csv')               # First column is an index
+ufo.to_csv('ufo_new.csv', index=False)  # First column is no longer index
+
+'''
+Other useful features
+'''
+
+# map values to other values
+ufo['Weekday'] = ufo.Weekday.map({  0:'Mon', 1:'Tue', 2:'Wed', 
+                                    3:'Thu', 4:'Fri', 5:'Sat', 
+                                    6:'Sun'})
+
+# Pivot rows to columns
+ufo.groupby(['Weekday','Hour']).City.count()
+ufo.groupby(['Weekday','Hour']).City.count().unstack(0) # Make first row level a column
+ufo.groupby(['Weekday','Hour']).City.count().unstack(1) # Make second row level a column
+
+# randomly sample a DataFrame
+idxs = np.random.rand(len(ufo)) < 0.66   # create a Series of booleans
+train = ufo[idxs]                        # will contain about 66% of the rows
+test = ufo[~idxs]                        # will contain the remaining rows
+
+# replace all instances of a value (supports 'inplace=True' argument)
+ufo.Shape.replace('DELTA', 'TRIANGLE')   # replace values in a Series
+ufo.replace('PYRAMID', 'TRIANGLE')       # replace values throughout a DataFrame
+
+
+'''
+Plotting
+'''
+
+# Plot the number of sightings over time
+ufo.groupby('Year').City.count().plot(  kind='line', 
+                                        color='r', 
+                                        linewidth=2, 
+                                        title='UFO Sightings by year')
+
+# Plot the number of sightings over the day of week and time of day
+ufo.groupby(['Weekday','Hour']).City.count().unstack(0).plot(   kind='line', 
+                                                                linewidth=2,
+                                                                title='UFO Sightings by Time of Day')
+
+# Plot the sightings in in July 2014
+ufo[(ufo.Year == 2014) & (ufo.Month == 7)].groupby(['Day']).City.count().plot(  kind='bar',
+                                                        color='b', 
+                                                        title='UFO Sightings in July 2014')
+                                                        
+# Plot multiple plots on the same plot (plots neeed to be in column format)              
+ufo_fourth = ufo[(ufo.Year.isin([2011, 2012, 2013, 2014])) & (ufo.Month == 7)]
+ufo_fourth.groupby(['Year', 'Day']).City.count().unstack(0).plot(   kind = 'bar',
+                                                                    subplots=True,
+                                                                    figsize=(7,9))
