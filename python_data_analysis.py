@@ -357,20 +357,29 @@ ufo['Weekday'] = ufo.Weekday.map({  0:'Mon', 1:'Tue', 2:'Wed',
                                     3:'Thu', 4:'Fri', 5:'Sat', 
                                     6:'Sun'})
 
-# Pivot rows / columns
+# Pivot rows to columns
 ufo.groupby(['Weekday','Hour']).City.count()
 ufo.groupby(['Weekday','Hour']).City.count().unstack(0) # Make first row level a column
 ufo.groupby(['Weekday','Hour']).City.count().unstack(1) # Make second row level a column
+
+# randomly sample a DataFrame
+idxs = np.random.rand(len(ufo)) < 0.66   # create a Series of booleans
+train = ufo[idxs]                        # will contain about 66% of the rows
+test = ufo[~idxs]                        # will contain the remaining rows
+
+# replace all instances of a value (supports 'inplace=True' argument)
+ufo.Shape.replace('DELTA', 'TRIANGLE')   # replace values in a Series
+ufo.replace('PYRAMID', 'TRIANGLE')       # replace values throughout a DataFrame
 
 '''
 Plotting
 '''
 
 # Plot the number of sightings over time
-ufo.groupby('Year').City.count().plot(kind='line', color='r', linewidth=3)
+ufo.groupby('Year').City.count().plot(kind='line', color='r', linewidth=2)
 
 # Plot the number of sightings over the day of week and time of day
-ufo.groupby(['Weekday','Hour']).City.count().unstack(0).plot(kind='line', linewidth=3)
+ufo.groupby(['Weekday','Hour']).City.count().unstack(0).plot(kind='line', linewidth=2)
 
 # Plot the sightings in in July 2014
 ufo.loc['2014-07'].Day.value_counts(sort=False).plot(kind='bar', title='Sightings in July')
@@ -380,9 +389,45 @@ ufo.loc['2014-07'].Day.value_counts(sort=False).plot(kind='bar', title='Sighting
 EXERCISE: Working with drinks data
 '''
 
-# Read drinks.csv into a DataFrame called 'drinks' (use the default index)
-drinks = pd.read_table('../data/drinks.csv', sep=',')
-drinks = pd.read_csv('../data/drinks.csv')              # equivalent
+# Read drinks.csv into a DataFrame called 'drinks'
+
+
+# Print the first 10 rows
+
+
+# Examine the data types of all columns
+
+
+# Print the 'beer_servings' Series
+
+
+# Calculate the average 'beer_servings' for the entire dataset
+
+
+# Print all columns, but only show rows where the country is in Europe
+
+
+# Calculate the average 'beer_servings' for all of Europe
+
+
+# Only show European countries with 'wine_servings' greater than 300
+
+
+# Determine which 10 countries have the highest 'total_litres_of_pure_alcohol'
+
+
+# Determine which country has the highest value for 'beer_servings'
+
+
+# Count the number of occurrences of each 'continent' value and see if it looks correct
+
+
+'''
+SOLUTIONS: Working with drinks data
+'''
+
+# Read drinks.csv into a DataFrame called 'drinks'
+drinks = pd.read_csv('drinks.csv')
 
 # Print the first 10 rows
 drinks.head(10)
@@ -417,41 +462,3 @@ drinks[drinks.beer_servings==drinks.beer_servings.max()].country
 
 # Count the number of occurrences of each 'continent' value and see if it looks correct
 drinks.continent.value_counts()
-
-
-'''
-Bonus Content:
-
-Additional wrangling / plotting
-'''
-
-# Create a new dataframe
-state_ufo = ufo.groupby('State').Population.mean()
-
-# Convert from series to DataFrame
-state_ufo = pd.DataFrame(state_ufo, columns=['Population'])
-
-# Pull in the region of the state
-state_ufo['Region'] = ufo.groupby('State').apply(lambda x: x.Region.iloc[0])
-
-# Add in the number of UFO sightings
-state_ufo['ufo_sightings'] = ufo.groupby('State').Population.count() 
-
-# Normalize the sightings to account for population differences
-state_ufo['sightings_norm'] = 100000 * state_ufo['ufo_sightings'] / state_ufo['Population']
-
-# Observe the results
-state_ufo.head()
-
-# Create a histogram
-state_ufo.sightings_norm.hist()
-
-# Control the number of bins
-state_ufo.sightings_norm.hist(bins=20)
-
-# Create a historgram stratified by a categorical variable
-state_ufo.sightings_norm.hist(by=state_ufo.Region, sharex=False)
-state_ufo.boxplot(column='sightings_norm', by='Region')
-
-# Scatter plot between two continuous variables
-state_ufo.plot(x='ufo_sightings', y='Population', kind='scatter', s=100, alpha=0.3)
