@@ -42,12 +42,13 @@ import numpy as np
 #        1) Put the data and the script in the same working directory
 #        2) Select the options buttom in the upper right hand cornder of the editor
 #        3) Select "Set console working directory"
+# The working directory can also be set programatically with the os module
 
 ufo = pd.read_csv('ufo_sightings.csv')
 
-ufo
-ufo.head(10)
-ufo.tail()
+ufo                 
+ufo.head(10)          # Look at the top x observations
+ufo.tail()            # Bottom x observations (defaults to 5)
 ufo.describe()        # describe any numeric columns (unless all columns are non-numeric)
 ufo.index             # "the index" (aka "the labels")
 ufo.columns           # column names (which is "an index")
@@ -67,9 +68,8 @@ ufo.State.describe()        # Valuable if you have numeric columns, which you of
 ufo.State.value_counts() / ufo.shape[0]
 
 '''
-Slicing / Filtering
+Slicing / Filtering / Sorting
 '''
-
 # selecting multiple columns
 ufo[['State', 'City']]
 my_cols = ['State', 'City']
@@ -81,7 +81,7 @@ ufo.loc[1,:]                            # row with label 1
 ufo.loc[:3,:]                           # rows with labels 1 through 3
 ufo.loc[1:3, 'City':'Shape Reported']   # rows 1-3, columns 'City' through 'Shape Reported'
 ufo.loc[:, 'City':'Shape Reported']     # all rows, columns 'City' through 'Shape Reported'
-ufo.loc[[1,3], ['City','Shape Reported']]  # rows 1 and 3, columns 'age' and 'gender'
+ufo.loc[[1,3], ['City','Shape Reported']]  # rows 1 and 3, columns 'City' and 'Shape Reported'
 
 # iloc: filter rows by POSITION, and select columns by POSITION
 ufo.iloc[0,:]                       # row with 0th position (first row)
@@ -107,7 +107,7 @@ ufo.sort_index()                                # sort rows by label
 ufo.sort_index(ascending=False)
 ufo.sort_index(by='State')                      # sort rows by specific column
 ufo.sort_index(by=['State', 'Shape Reported'])  # sort by multiple columns
-ufo.sort_index(by=['State', 'Shape Reported'], ascending=[False, True])  # sort by multiple columns
+ufo.sort_index(by=['State', 'Shape Reported'], ascending=[False, True])  # specify sort order
 
 # detecting duplicate rows
 ufo.duplicated()                                # Series of logicals
@@ -124,13 +124,18 @@ EXERCISE:
 - Determine the top three most common colors of the typical UFO
 - Determine the best cities in Virginia to see UFOs
 '''
-# Shape
-ufo['Shape Reported'].value_counts()
-# Color
-ufo['Colors Reported'].value_counts()[0:3]
-# Locations
-ufo.City.value_counts().head(20)
-ufo.City.value_counts()[0:20]
+
+# Read in the dataset
+ufo = pd.read_csv('ufo_sightings.csv')
+
+# Find the frequency of UFO sightings by shape
+ufo['Shape Reported'].value_counts().order(ascending=False)
+
+# Determine the top three most common colors of the typical UFO
+ufo['Colors Reported'].value_counts()[:3]
+
+# Determine the five cities in Virginia with the most UFO sightings
+ufo[ufo.State == 'VA'].City.value_counts()[:5]
 
 '''
 Modifying Columns
@@ -260,15 +265,21 @@ ufo.index.month
 ufo.index.weekday
 ufo.index.day
 ufo.index.time
+ufo.index.hour
+
+# Create a new variable with time element
+ufo['Year'] = ufo.index.year
+ufo['Day'] = ufo.index.day
+ufo['Weekday'] = ufo.index.weekday
+ufo['Hour'] = ufo.index.hour
 
 '''
 Split-Apply-Combine
 '''
 
 # for each year, calculate the count of sightings
-ufo['Year'] = ufo.index.year
-ufo.groupby('Year').City.count()
-ufo.Year.value_counts()             # Same as before
+ufo.groupby('Hour').City.count()
+ufo.Hour.value_counts()             # Same as before
 
 # for each Shape, calculate the first sighting, last sighting, and range of sightings. 
 ufo.groupby('Shape').Year.min()
@@ -290,8 +301,8 @@ def get_max_year(df):
 ufo.groupby('Shape').apply(lambda x: get_max_year(x))
 
 # split/combine can occur on multiple columns at the same time
-# for each Shape/Color combination, determine first sighting
-ufo.groupby(['Shape','Colors']).Year.max()
+# for each Weekday / Hour combination, determine first sighting
+ufo.groupby(['Weekday','Hour']).City.count()
 
 
 '''
@@ -336,21 +347,33 @@ ufo.to_csv('ufo_new.csv')               # First column is an index
 ufo.to_csv('ufo_new.csv', index=False)  # First column is no longer index
 
 '''
+Other useful features
+'''
+
+# map values to other values
+ufo['Weekday'] = ufo.Weekday.map({  0:'Mon', 1:'Tue', 2:'Wed', 
+                                    3:'Thu', 4:'Fri', 5:'Sat', 
+                                    6:'Sun'})
+
+# Pivot rows / columns
+ufo.groupby(['Weekday','Hour']).City.count()
+ufo.groupby(['Weekday','Hour']).City.count().unstack(0) # Make first row level a column
+ufo.groupby(['Weekday','Hour']).City.count().unstack(1) # Make second row level a column
+
+'''
 Plotting
 '''
 
-# bar plot of shapes of UFOs
-ufo.Shape.value_counts().plot(kind='bar', title='Sightings per shape')
-plt.xlabel('Shape')
-plt.ylabel('Count')
-
-
 # Plot the number of sightings over time
-ufo.groupby('Year').City.count().plot(kind='line')
+ufo.groupby('Year').City.count().plot(kind='line', color='r', linewidth=3)
 
-# Adjust parameters
-ufo.groupby('Year').City.count().plot(linewidth=3, colors='r')
-plt.ylabel('UFO Sightings')
+# Plot the number of sightings over the time of day
+ufo.groupby(['Weekday','Hour']).City.count().unstack(0).plot(kind='line', linewidth=3)
+
+# bar plot of UFOs in July 2014 (remove)
+ufo.Shape.value_counts().plot(kind='bar', title='Sightings per shape')
+
+ufo.loc['2014-07'].Day.value_counts().plot(kind='bar', title='Sightings per day')
 
 '''
 EXERCISE:   Plot the number of UFOs by day
@@ -359,7 +382,6 @@ BONUS:      Plot the number of UFOs by the time of day, for each weekday
 
 # Plot the number of sightings over time of day
 ufo['Hour'] = ufo.index.hour
-ufo.groupby('Hour').City.count().plot(linewidth=3)
 
 # Split up the plot by days of the week
 ufo['Weekday'] = ufo.index.weekday
