@@ -49,14 +49,16 @@ ufo.State            # equivalent
 type(ufo.State)
 
 # summarizing a non-numeric column
-ufo.State.describe()        # Valuable if you have numeric columns, which you often will
-ufo.State.value_counts() / ufo.shape[0]
+ufo.State.describe()        # Only works for non-numeric if you don't have any numeric data 
+ufo.State.value_counts()    # Valuable if you have numeric columns, which you often will
+
+ufo.State.value_counts() / ufo.shape[0] # Values divided by number of records
 
 '''
 Slicing / Filtering / Sorting
 '''
 # selecting multiple columns
-ufo[['State', 'City']]
+ufo[['State', 'City','Shape Reported']]
 my_cols = ['State', 'City']
 ufo[my_cols]
 type(ufo[my_cols])
@@ -66,6 +68,7 @@ ufo.loc[1,:]                            # row with label 1
 ufo.loc[:3,:]                           # rows with labels 1 through 3
 ufo.loc[1:3, 'City':'Shape Reported']   # rows 1-3, columns 'City' through 'Shape Reported'
 ufo.loc[:, 'City':'Shape Reported']     # all rows, columns 'City' through 'Shape Reported'
+ufo.loc[[1,3], ['City','Shape Reported']]  # rows 1 and 3, columns 'City' and 'Shape Reported'
 ufo.loc[[1,3], ['City','Shape Reported']]  # rows 1 and 3, columns 'City' and 'Shape Reported'
 
 # iloc: filter rows by POSITION, and select columns by POSITION
@@ -81,18 +84,20 @@ ufo[['City', 'Shape Reported']][0:3]
     
 # logical filtering
 ufo[ufo.State == 'TX']
+ufo[~(ufo.State == 'TX')]
 ufo.City[ufo.State == 'TX']
 ufo[ufo.State == 'TX'].City             # Same thing
 ufo[(ufo.State == 'CA') | (ufo.State =='TX')]
+ufo_dallas = ufo[(ufo.City == 'Dallas') & (ufo.State =='TX')]
 ufo[ufo.City.isin(['Austin','Dallas', 'Houston'])]
 
 # sorting
 ufo.State.order()                               # only works for a Series
-ufo.sort_index()                                # sort rows by label
+ufo.sort_index(inplace=True)                                # sort rows by label
 ufo.sort_index(ascending=False)
 ufo.sort_index(by='State')                      # sort rows by specific column
 ufo.sort_index(by=['State', 'Shape Reported'])  # sort by multiple columns
-ufo.sort_index(by=['State', 'Shape Reported'], ascending=[False, True])  # specify sort order
+ufo.sort_index(by=['State', 'Shape Reported'], ascending=[False, True], inplace=True)  # specify sort order
 
 # detecting duplicate rows
 ufo.duplicated()                                # Series of logicals
@@ -112,6 +117,8 @@ ufo.head()
 
 # rename columns inplace
 ufo.rename(columns={'Colors Reported':'Colors', 'Shape Reported':'Shape'}, inplace=True)
+ufo.rename(columns={'Colors Reported':'Colors', 'Shape Reported':'Shape'}, inplace=False)
+
 ufo.head()
 
 # hide a column (temporarily)
@@ -134,7 +141,8 @@ ufo.Shape.value_counts(dropna=False)    # includes missing values (new in pandas
 ufo.Shape.isnull()       # True if NaN, False otherwise
 ufo.Shape.notnull()      # False if NaN, True otherwise
 ufo.Shape.isnull().sum() # count the missing values
-ufo[ufo.Shape.notnull()].head()
+ufo.isnull().sum()
+ufo[(ufo.Shape.notnull()) & (ufo.Colors.notnull())]
 
 ufo_shape_not_null = ufo[ufo.Shape.notnull()]
 
@@ -245,6 +253,7 @@ ufo.index.is_unique
 
 ufo.set_index('City', inplace=True) # Replaces existing index
 ufo.set_index('City', inplace=True, append=True) # Adds to existing index
+ufo.sort_index(inplace=True)
 
 # Slice using the index
 ufo.loc['WY',:]
@@ -261,7 +270,7 @@ ufo.reset_index(inplace=True)               # Remove all labels from the index
 # Create a multi-index
 ufo.set_index(['State', 'City'], inplace=True)
 ufo.sort_index(inplace=True)
-ufo
+ufo.head()
 ufo.index
 
 # Slice using the multi-index
@@ -304,9 +313,9 @@ ufo.loc['1995-01-01',:]
 
 
 # Access range of times/ranges
-ufo.loc['1995':]
-ufo.loc['1995':'1996']
-ufo.loc['1995-12-01':'1996-01']
+ufo.loc['1995':,:]
+ufo.loc['1995':'1996',:]
+ufo.loc['1995-12-01':'1996-01',:]
 
 # Access elements of the timestamp
 # Date Componenets: http://pandas.pydata.org/pandas-docs/stable/timeseries.html#time-date-components
@@ -329,7 +338,7 @@ Split-Apply-Combine
 '''
 
 # for each year, calculate the count of sightings
-ufo.groupby('Hour').City.count()
+ufo.groupby('Year').City.count()
 ufo.Hour.value_counts()             # Same as before
 
 # for each Shape, calculate the first sighting, last sighting, and range of sightings. 
