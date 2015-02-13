@@ -20,7 +20,7 @@ Spyder Reference (Windows):
 Reading, Summarizing data
 '''
 
-import pandas as pd  # This line imports a (already installed) python package
+import pandas as pd  # This line imports  (already installed) python package
 import numpy as np
 
 # Running this next line of code assumes that your console working directory is set up correctly 
@@ -243,7 +243,7 @@ ufo.head()
 ufo.index
 ufo.index.is_unique
 
-ufo.set_index('City', inplace=True, append=True) # Replaces existing index
+ufo.set_index('City', inplace=True) # Replaces existing index
 ufo.set_index('City', inplace=True, append=True) # Adds to existing index
 
 # Slice using the index
