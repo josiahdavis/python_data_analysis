@@ -20,7 +20,7 @@ Spyder Reference (Windows):
 Reading, Summarizing data
 '''
 
-import pandas as pd  # This line imports an (already installed) python package
+import pandas as pd  # This line imports a (already installed) python package
 import numpy as np
 
 # Running this next line of code assumes that your console working directory is set up correctly 
@@ -243,6 +243,9 @@ ufo.head()
 ufo.index
 ufo.index.is_unique
 
+ufo.set_index('City', inplace=True, append=True) # Replaces existing index
+ufo.set_index('City', inplace=True, append=True) # Adds to existing index
+
 # Slice using the index
 ufo.loc['WY',:]
 ufo.loc[['ND', 'WY'],:]
@@ -252,7 +255,8 @@ ufo.loc['ND':'WY',:]
 
 
 # Reset the index
-ufo.reset_index(inplace=True)
+ufo.reset_index(level='City', inplace=True) # Remove a certain label from the index
+ufo.reset_index(inplace=True)               # Remove all labels from the index
 
 # Create a multi-index
 ufo.set_index(['State', 'City'], inplace=True)
@@ -441,3 +445,4 @@ ufo_fourth = ufo[(ufo.Year.isin([2011, 2012, 2013, 2014])) & (ufo.Month == 7)]
 ufo_fourth.groupby(['Year', 'Day']).City.count().unstack(0).plot(   kind = 'bar',
                                                                     subplots=True,
                                                                     figsize=(7,9))
+                                                                    
