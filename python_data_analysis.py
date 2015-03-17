@@ -93,7 +93,7 @@ ufo[ufo.City.isin(['Austin','Dallas', 'Houston'])]
 
 # sorting
 ufo.State.order()                               # only works for a Series
-ufo.sort_index(inplace=True)                                # sort rows by label
+ufo.sort_index(inplace=True)                    # sort rows by label
 ufo.sort_index(ascending=False)
 ufo.sort_index(by='State')                      # sort rows by specific column
 ufo.sort_index(by=['State', 'Shape Reported'])  # sort by multiple columns
@@ -234,6 +234,7 @@ drinks.sort_index(by='total_litres_of_pure_alcohol').tail(10)
 
 # Determine which country has the highest value for 'beer_servings'
 drinks[drinks.beer_servings==drinks.beer_servings.max()].country
+drinks[['country', 'beer_servings']].sort_index(by='beer_servings', ascending=False).head(5)
 
 # Count the number of occurrences of each 'continent' value and see if it looks correct
 drinks.continent.value_counts()
