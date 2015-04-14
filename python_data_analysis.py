@@ -1,19 +1,21 @@
 '''
-Data Analysis in Python
+    ======================================
+    P Y T H O N    for    A N A L Y S I S
+    ======================================
 
-    UFO data
+    --- UFO data ---
     Scraped from: http://www.nuforc.org/webreports.html
+    Write up about this data: http://josiahjdavis.com/2015/01/01/identifying-with-ufos/   
     
-    Drinks data
+    --- Drinks data ---
     Downloaded from: https://github.com/fivethirtyeight/data/tree/master/alcohol-consumption
-'''
-
-'''
-Spyder Reference (Windows):
-    Ctrl + L        (in the console):       Clears the console
-    Up/Down-arrows  (in the console):       Retreives previous commands
-    Ctrl + Enter    (in the editor):        Runs the line of code
-    Ctrl + S        (in the editor):        Saves the file              
+    Write up about this data: http://fivethirtyeight.com/datalab/dear-mona-followup-where-do-people-drink-the-most-beer-wine-and-spirits/
+    
+    --- Spyder Reference (Windows) ---
+        Ctrl + L        (in the console):       Clears the console
+        Up/Down-arrows  (in the console):       Retreives previous commands
+        Ctrl + Enter    (in the editor):        Runs the line of code
+        Ctrl + S        (in the editor):        Saves the file  
 '''
 
 '''
@@ -29,7 +31,7 @@ import numpy as np
 #        2) Select the options buttom in the upper right hand cornder of the editor
 #        3) Select "Set console working directory"
 
-ufo = pd.read_csv('ufo_sightings.csv')
+ufo = pd.read_csv('https://raw.githubusercontent.com/josiahdavis/python_data_analysis/master/ufo_sightings.csv')
 
 ufo                 
 ufo.head(10)          # Look at the top x observations
