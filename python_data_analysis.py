@@ -170,12 +170,15 @@ EXERCISE: Working with drinks data
 
 # Determine which countries do not have continent designations
 
+
+# Determine the number of countries per continent. Does it look right?
+
 '''
 SOLUTIONS: Working with drinks data
 '''
 
 # Read drinks.csv into a DataFrame called 'drinks'
-drinks = pd.read_csv('drinks.csv', na_filter=False)
+drinks = pd.read_csv('drinks.csv')
 
 # Print the first 10 rows
 drinks.head(10)
@@ -215,27 +218,24 @@ drinks.continent.value_counts()
 # Determine which countries do not have continent designations
 drinks[drinks.continent.isnull()].country
 
+# Due to na_filter = True default option within pd.read_csv()
+
 '''
 Indexing and Slicing Data
 '''
 
 # Create a new index
 ufo.set_index('State', inplace=True)
-ufo.head()
+ufo.head(25)
 ufo.index
 ufo.index.is_unique
 
-ufo.set_index('City', inplace=True) # Replaces existing index
-ufo.set_index('City', inplace=True, append=True) # Adds to existing index
-ufo.sort_index(inplace=True)
-
 # loc: filter rows by LABEL, and select columns by LABEL
-ufo.loc[1,:]                            # row with label 1
-ufo.loc[:3,:]                           # rows with labels 1 through 3
-ufo.loc[1:3, 'City':'Shape Reported']   # rows 1-3, columns 'City' through 'Shape Reported'
-ufo.loc[:, 'City':'Shape Reported']     # all rows, columns 'City' through 'Shape Reported'
-ufo.loc[[1,3], ['City','Shape Reported']]  # rows 1 and 3, columns 'City' and 'Shape Reported'
-ufo.loc[[1,3], ['City','Shape Reported']]  # rows 1 and 3, columns 'City' and 'Shape Reported'
+ufo.loc['FL',:]                                     # row with label FL
+ufo.loc[:'FL',:]                                    # rows with labels 1 through 3
+ufo.loc['FL', 'City':'Shape Reported']              # rows FL, columns 'City' through 'Shape Reported'
+ufo.loc[:, 'City':'Shape Reported']                 # all rows, columns 'City' through 'Shape Reported'
+ufo.loc[['FL', 'TX'], ['City','Shape Reported']]    # rows FL and TX, columns 'City' and 'Shape Reported'
 
 # iloc: filter rows by POSITION, and select columns by POSITION
 ufo.iloc[0,:]                       # row with 0th position (first row)
@@ -244,29 +244,20 @@ ufo.iloc[0:3, 0:3]                  # rows and columns with positions 0 through 
 ufo.iloc[:, 0:3]                    # all rows, columns with positions 0 through 2
 ufo.iloc[[0,2], [0,1]]              # 1st and 3rd row, 1st and 2nd column
 
-
-# Slice using the index
-ufo.loc['WY',:]
-ufo.loc[['ND', 'WY'],:]
-ufo.loc['ND':'WY',:]                # Error because of sorting
+# Add another level to the index
+ufo.set_index('City', inplace=True, append=True) # Adds to existing index
 ufo.sort_index(inplace=True)
-ufo.loc['ND':'WY',:]
-
-# Reset the index
-ufo.reset_index(level='City', inplace=True) # Remove a certain label from the index
-ufo.reset_index(inplace=True)               # Remove all labels from the index
-
-# Create a multi-index
-ufo.set_index(['State', 'City'], inplace=True)
-ufo.sort_index(inplace=True)
-ufo.head()
-ufo.index
+ufo.head(25)
 
 # Slice using the multi-index
 ufo.loc[['ND', 'WY'],:]
 ufo.loc['ND':'WY',:]
 ufo.loc[('ND', 'Bismarck'),:]
 ufo.loc[('ND', 'Bismarck'):('ND','Casselton'),:]
+
+# Reset the index
+ufo.reset_index(level='City', inplace=True) # Remove a certain label from the index
+ufo.reset_index(inplace=True)               # Remove all labels from the index
 
 '''
 Analyzing across time
@@ -374,7 +365,7 @@ ufo = pd.merge(ufo, pop, left_on='State', right_on='State', how = 'left')
 ufo.head()
 
 # Check for values that didn't make it (length)
-len(ufo[ufo.Population.isnull()])
+ufo.Population.isnull().sum()
 
 # Check for values that didn't make it (values)
 ufo[ufo.Population.isnull()]
@@ -391,14 +382,14 @@ ufo = pd.merge(ufo, pop, on='State', how = 'left')
 '''
 Writing Data
 '''
-ufo.to_csv('ufo_new.csv')               # First column is an index
-ufo.to_csv('ufo_new.csv', index=False)  # First column is no longer index
+ufo.to_csv('ufo_new.csv')               
+ufo.to_csv('ufo_new.csv', index=False)  # Index is not included in the csv
 
 '''
 Other useful features
 '''
 
-# detecting duplicate rows
+# Detect duplicate rows
 ufo.duplicated()                                # Series of logicals
 ufo.duplicated().sum()                          # count of duplicates
 ufo[ufo.duplicated(['State','Time'])]           # only show duplicates
@@ -406,7 +397,7 @@ ufo[ufo.duplicated()==False]                    # only show unique rows
 ufo_unique = ufo[~ufo.duplicated()]             # only show unique rows
 ufo.duplicated(['State','Time']).sum()          # columns for identifying duplicates
 
-# map values to other values
+# Map values to other values
 ufo['Weekday'] = ufo.Weekday.map({  0:'Mon', 1:'Tue', 2:'Wed', 
                                     3:'Thu', 4:'Fri', 5:'Sat', 
                                     6:'Sun'})
@@ -416,15 +407,14 @@ ufo.groupby(['Weekday','Hour']).City.count()
 ufo.groupby(['Weekday','Hour']).City.count().unstack(0) # Make first row level a column
 ufo.groupby(['Weekday','Hour']).City.count().unstack(1) # Make second row level a column
 
-# randomly sample a DataFrame
+# Randomly sample a DataFrame
 idxs = np.random.rand(len(ufo)) < 0.66   # create a Series of booleans
 train = ufo[idxs]                        # will contain about 66% of the rows
 test = ufo[~idxs]                        # will contain the remaining rows
 
-# replace all instances of a value (supports 'inplace=True' argument)
+# Replace all instances of a value (supports 'inplace=True' argument)
 ufo.Shape.replace('DELTA', 'TRIANGLE')   # replace values in a Series
 ufo.replace('PYRAMID', 'TRIANGLE')       # replace values throughout a DataFrame
-
 
 '''
 Plotting
@@ -436,11 +426,15 @@ ufo.groupby('Year').City.count().plot(  kind='line',
                                         linewidth=2, 
                                         title='UFO Sightings by year')
 
+# Analysis: Aliens love the X-Files.
+                                        
 # Plot the number of sightings over the day of week and time of day
 ufo.groupby(['Weekday','Hour']).City.count().unstack(0).plot(   kind='line', 
                                                                 linewidth=2,
                                                                 title='UFO Sightings by Time of Day')
 
+# Analysis: Aliens work hard, party hard.
+                                                                
 # Plot the sightings in in July 2014
 ufo[(ufo.Year == 2014) & (ufo.Month == 7)].groupby(['Day']).City.count().plot(  kind='bar',
                                                         color='b', 
@@ -452,3 +446,4 @@ ufo_fourth.groupby(['Year', 'Day']).City.count().unstack(0).plot(   kind = 'bar'
                                                                     subplots=True,
                                                                     figsize=(7,9))
                                                                     
+# Analysis: Aliens are patriotic.
