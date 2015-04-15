@@ -18,11 +18,13 @@
         Ctrl + S        (in the editor):        Saves the file  
 '''
 
+
+
 '''
 Reading, Summarizing data
 '''
 
-import pandas as pd  # This line imports  (already installed) python package
+import pandas as pd  # Import an already installed python package
 import numpy as np
 
 # Running this next line of code assumes that your console working directory is set up correctly 
@@ -31,9 +33,16 @@ import numpy as np
 #        2) Select the options buttom in the upper right hand cornder of the editor
 #        3) Select "Set console working directory"
 
+# Read a the csv file from your computer
+ufo = pd.read_csv('ufo_sightings.csv')
+
+# Alterntively read in the file from the internet
 ufo = pd.read_csv('https://raw.githubusercontent.com/josiahdavis/python_data_analysis/master/ufo_sightings.csv')
 
-ufo                 
+# Finding help on a function
+help(pd.read_csv)
+
+# Summarize the data that was just read in
 ufo.head(10)          # Look at the top x observations
 ufo.tail()            # Bottom x observations (defaults to 5)
 ufo.describe()        # describe any numeric columns (unless all columns are non-numeric)
@@ -43,57 +52,31 @@ ufo.dtypes            # data types of each column
 ufo.values            # underlying numpy array
 ufo.info()            # concise summary
 
-# DataFrame vs Series, selecting a column
-type(ufo)
-isinstance(ufo, pd.DataFrame)
+'''
+Filtering and Sorting Data
+'''
+
+# Select a single column
 ufo['State']
-ufo.State            # equivalent
-type(ufo.State)
+ufo.State                       # This is equivalent
 
-# summarizing a non-numeric column
-ufo.State.describe()        # Only works for non-numeric if you don't have any numeric data 
-ufo.State.value_counts()    # Valuable if you have numeric columns, which you often will
-
-ufo.State.value_counts() / ufo.shape[0] # Values divided by number of records
-
-'''
-Slicing / Filtering / Sorting
-'''
-# selecting multiple columns
+# Select multiple columns
 ufo[['State', 'City','Shape Reported']]
-my_cols = ['State', 'City']
-ufo[my_cols]
-type(ufo[my_cols])
 
-# loc: filter rows by LABEL, and select columns by LABEL
-ufo.loc[1,:]                            # row with label 1
-ufo.loc[:3,:]                           # rows with labels 1 through 3
-ufo.loc[1:3, 'City':'Shape Reported']   # rows 1-3, columns 'City' through 'Shape Reported'
-ufo.loc[:, 'City':'Shape Reported']     # all rows, columns 'City' through 'Shape Reported'
-ufo.loc[[1,3], ['City','Shape Reported']]  # rows 1 and 3, columns 'City' and 'Shape Reported'
-ufo.loc[[1,3], ['City','Shape Reported']]  # rows 1 and 3, columns 'City' and 'Shape Reported'
-
-# iloc: filter rows by POSITION, and select columns by POSITION
-ufo.iloc[0,:]                       # row with 0th position (first row)
-ufo.iloc[0:3,:]                     # rows with positions 0 through 2 (not 3)
-ufo.iloc[0:3, 0:3]                  # rows and columns with positions 0 through 2
-ufo.iloc[:, 0:3]                    # all rows, columns with positions 0 through 2
-ufo.iloc[[0,2], [0,1]]              # 1st and 3rd row, 1st and 2nd column
-
-# mixing: select columns by LABEL, then filter rows by POSITION
-ufo.City[0:3]
-ufo[['City', 'Shape Reported']][0:3]
+my_cols = ['State', 'City', 'Shape Reported']
+ufo[my_cols]                    # This is equivalent
     
-# logical filtering
+# Logical filtering
 ufo[ufo.State == 'TX']
-ufo[~(ufo.State == 'TX')]
+ufo[~(ufo.State == 'TX')]       # Select everything where the test fails
+ufo[ufo.State != 'TX']          # Same thing
 ufo.City[ufo.State == 'TX']
-ufo[ufo.State == 'TX'].City             # Same thing
+ufo[ufo.State == 'TX'].City     # Same thing
 ufo[(ufo.State == 'CA') | (ufo.State =='TX')]
 ufo_dallas = ufo[(ufo.City == 'Dallas') & (ufo.State =='TX')]
 ufo[ufo.City.isin(['Austin','Dallas', 'Houston'])]
 
-# sorting
+# Sorting
 ufo.State.order()                               # only works for a Series
 ufo.sort_index(inplace=True)                    # sort rows by label
 ufo.sort_index(ascending=False)
@@ -101,62 +84,50 @@ ufo.sort_index(by='State')                      # sort rows by specific column
 ufo.sort_index(by=['State', 'Shape Reported'])  # sort by multiple columns
 ufo.sort_index(by=['State', 'Shape Reported'], ascending=[False, True], inplace=True)  # specify sort order
 
-# detecting duplicate rows
-ufo.duplicated()                                # Series of logicals
-ufo.duplicated().sum()                          # count of duplicates
-ufo[ufo.duplicated(['State','Time'])]           # only show duplicates
-ufo[ufo.duplicated()==False]                    # only show unique rows
-ufo_unique = ufo[~ufo.duplicated()]             # only show unique rows
-ufo.duplicated(['State','Time']).sum()          # columns for identifying duplicates
-
 '''
 Modifying Columns
 '''
 
-# add a new column as a function of existing columns
+# Add a new column as a function of existing columns
 ufo['Location'] = ufo['City'] + ', ' + ufo['State']
 ufo.head()
 
-# rename columns inplace
+# Rename columns
 ufo.rename(columns={'Colors Reported':'Colors', 'Shape Reported':'Shape'}, inplace=True)
-ufo.rename(columns={'Colors Reported':'Colors', 'Shape Reported':'Shape'}, inplace=False)
 
-ufo.head()
-
-# hide a column (temporarily)
+# Hide a column (temporarily)
 ufo.drop(['Location'], axis=1)
-ufo[ufo.columns[:-1]]
 
-# delete a column (permanently)
+# Delete a column (permanently)
 del ufo['Location']
 
 '''
 Handling Missing Values
 '''
 
-# missing values are often just excluded
-ufo.describe()                          # excludes missing values
-ufo.Shape.value_counts()                # excludes missing values
-ufo.Shape.value_counts(dropna=False)    # includes missing values (new in pandas 0.14.1)
+# Missing values are often just excluded
+ufo.describe()                          # Excludes missing values
+ufo.Shape.value_counts()                # Excludes missing values
+ufo.Shape.value_counts(dropna=False)    # Includes missing values (new in pandas 0.14.1)
 
-# find missing values in a Series
+# Find missing values in a Series
 ufo.Shape.isnull()       # True if NaN, False otherwise
 ufo.Shape.notnull()      # False if NaN, True otherwise
-ufo.Shape.isnull().sum() # count the missing values
+ufo.Shape.isnull().sum() # Count the missing values
 ufo.isnull().sum()
 ufo[(ufo.Shape.notnull()) & (ufo.Colors.notnull())]
 
 ufo_shape_not_null = ufo[ufo.Shape.notnull()]
 
-# find missing values in a DataFrame
+# Find missing values in a DataFrame
 ufo.isnull()
 ufo.isnull().sum()
 
-# drop missing values
-ufo.dropna()             # drop a row if ANY values are missing
-ufo.dropna(how='all')    # drop a row only if ALL values are missing
+# Drop missing values
+ufo.dropna()             # Drop a row if ANY values are missing
+ufo.dropna(how='all')    # Drop a row only if ALL values are missing
 
-# fill in missing values
+# Fill in missing values
 ufo.Colors.fillna(value='Unknown', inplace=True)
 ufo.fillna('Unknown')
 
@@ -204,7 +175,7 @@ SOLUTIONS: Working with drinks data
 '''
 
 # Read drinks.csv into a DataFrame called 'drinks'
-drinks = pd.read_csv('drinks.csv')
+drinks = pd.read_csv('drinks.csv', na_filter=False)
 
 # Print the first 10 rows
 drinks.head(10)
@@ -245,7 +216,7 @@ drinks.continent.value_counts()
 drinks[drinks.continent.isnull()].country
 
 '''
-Indexing
+Indexing and Slicing Data
 '''
 
 # Create a new index
@@ -258,13 +229,28 @@ ufo.set_index('City', inplace=True) # Replaces existing index
 ufo.set_index('City', inplace=True, append=True) # Adds to existing index
 ufo.sort_index(inplace=True)
 
+# loc: filter rows by LABEL, and select columns by LABEL
+ufo.loc[1,:]                            # row with label 1
+ufo.loc[:3,:]                           # rows with labels 1 through 3
+ufo.loc[1:3, 'City':'Shape Reported']   # rows 1-3, columns 'City' through 'Shape Reported'
+ufo.loc[:, 'City':'Shape Reported']     # all rows, columns 'City' through 'Shape Reported'
+ufo.loc[[1,3], ['City','Shape Reported']]  # rows 1 and 3, columns 'City' and 'Shape Reported'
+ufo.loc[[1,3], ['City','Shape Reported']]  # rows 1 and 3, columns 'City' and 'Shape Reported'
+
+# iloc: filter rows by POSITION, and select columns by POSITION
+ufo.iloc[0,:]                       # row with 0th position (first row)
+ufo.iloc[0:3,:]                     # rows with positions 0 through 2 (not 3)
+ufo.iloc[0:3, 0:3]                  # rows and columns with positions 0 through 2
+ufo.iloc[:, 0:3]                    # all rows, columns with positions 0 through 2
+ufo.iloc[[0,2], [0,1]]              # 1st and 3rd row, 1st and 2nd column
+
+
 # Slice using the index
 ufo.loc['WY',:]
 ufo.loc[['ND', 'WY'],:]
 ufo.loc['ND':'WY',:]                # Error because of sorting
 ufo.sort_index(inplace=True)
 ufo.loc['ND':'WY',:]
-
 
 # Reset the index
 ufo.reset_index(level='City', inplace=True) # Remove a certain label from the index
@@ -411,6 +397,14 @@ ufo.to_csv('ufo_new.csv', index=False)  # First column is no longer index
 '''
 Other useful features
 '''
+
+# detecting duplicate rows
+ufo.duplicated()                                # Series of logicals
+ufo.duplicated().sum()                          # count of duplicates
+ufo[ufo.duplicated(['State','Time'])]           # only show duplicates
+ufo[ufo.duplicated()==False]                    # only show unique rows
+ufo_unique = ufo[~ufo.duplicated()]             # only show unique rows
+ufo.duplicated(['State','Time']).sum()          # columns for identifying duplicates
 
 # map values to other values
 ufo['Weekday'] = ufo.Weekday.map({  0:'Mon', 1:'Tue', 2:'Wed', 
