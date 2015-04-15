@@ -37,7 +37,7 @@ import numpy as np
 ufo = pd.read_csv('ufo_sightings.csv')
 
 # Alternatively, specify the file path
-ufo = pd.read_csv('ufo_sightings.csv')
+ufo = pd.read_csv('C:/Users/josdavis/Documents/Personal/GitHub/python_data_analysis/ufo_sightings.csv')
 
 # Alterntively read in the file from the internet
 ufo = pd.read_csv('https://raw.githubusercontent.com/josiahdavis/python_data_analysis/master/ufo_sightings.csv')
@@ -82,7 +82,7 @@ ufo[ufo.City.isin(['Austin','Dallas', 'Houston'])]
 # Sorting
 ufo.State.order()                               # only works for a Series
 ufo.sort_index(inplace=True)                    # sort rows by label
-ufo.sort_index(ascending=False)
+ufo.sort_index(ascending=False, inplace=False)
 ufo.sort_index(by='State')                      # sort rows by specific column
 ufo.sort_index(by=['State', 'Shape Reported'])  # sort by multiple columns
 ufo.sort_index(by=['State', 'Shape Reported'], ascending=[False, True], inplace=True)  # specify sort order
@@ -222,6 +222,7 @@ drinks.continent.value_counts()
 drinks[drinks.continent.isnull()].country
 
 # Due to "na_filter = True" default within pd.read_csv()
+help(pd.read_csv)
 
 '''
 Indexing and Slicing Data
@@ -234,13 +235,12 @@ ufo.index.is_unique
 ufo.sort_index(inplace=True)
 ufo.head(25)
 
-
 # loc: filter rows by LABEL, and select columns by LABEL
 ufo.loc['FL',:]                                     # row with label FL
 ufo.loc[:'FL',:]                                    # rows with labels 'FL' through ''
-ufo.loc['FL':'HI', 'City':'Shape Reported']         # rows FL, columns 'City' through 'Shape Reported'
-ufo.loc[:, 'City':'Shape Reported']                 # all rows, columns 'City' through 'Shape Reported'
-ufo.loc[['FL', 'TX'], ['City','Shape Reported']]    # rows FL and TX, columns 'City' and 'Shape Reported'
+ufo.loc['FL':'HI', 'City':'Shape']         # rows FL, columns 'City' through 'Shape Reported'
+ufo.loc[:, 'City':'Shape']                 # all rows, columns 'City' through 'Shape Reported'
+ufo.loc[['FL', 'TX'], ['City','Shape']]    # rows FL and TX, columns 'City' and 'Shape Reported'
 
 # iloc: filter rows by POSITION, and select columns by POSITION
 ufo.iloc[0,:]                       # row with 0th position (first row)
@@ -324,7 +324,7 @@ Split-Apply-Combine
 
 # for each year, calculate the count of sightings
 ufo.groupby('Year').City.count()
-ufo.Hour.value_counts()             # Same as before
+ufo.Year.value_counts()             # Same as before
 
 # for each Shape, calculate the first sighting, last sighting, and range of sightings. 
 ufo.groupby('Shape').Year.min()
