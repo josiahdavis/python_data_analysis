@@ -229,14 +229,16 @@ Indexing and Slicing Data
 
 # Create a new index
 ufo.set_index('State', inplace=True)
-ufo.head(25)
 ufo.index
 ufo.index.is_unique
+ufo.sort_index(inplace=True)
+ufo.head(25)
+
 
 # loc: filter rows by LABEL, and select columns by LABEL
 ufo.loc['FL',:]                                     # row with label FL
-ufo.loc[:'FL',:]                                    # rows with labels 1 through 3
-ufo.loc['FL', 'City':'Shape Reported']              # rows FL, columns 'City' through 'Shape Reported'
+ufo.loc[:'FL',:]                                    # rows with labels 'FL' through ''
+ufo.loc['FL':'HI', 'City':'Shape Reported']         # rows FL, columns 'City' through 'Shape Reported'
 ufo.loc[:, 'City':'Shape Reported']                 # all rows, columns 'City' through 'Shape Reported'
 ufo.loc[['FL', 'TX'], ['City','Shape Reported']]    # rows FL and TX, columns 'City' and 'Shape Reported'
 
@@ -343,8 +345,8 @@ def get_max_year(df):
         
 ufo.groupby('Shape').apply(lambda x: get_max_year(x))
 
-# split/combine can occur on multiple columns at the same time
-# for each Weekday / Hour combination, determine first sighting
+# Split/combine can occur on multiple columns at the same time
+# For each Weekday / Hour combination, determine a count of sightings
 ufo.groupby(['Weekday','Hour']).City.count()
 
 '''
