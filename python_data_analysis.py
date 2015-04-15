@@ -33,7 +33,10 @@ import numpy as np
 #        2) Select the options buttom in the upper right hand cornder of the editor
 #        3) Select "Set console working directory"
 
-# Read a the csv file from your computer
+# Read a the csv file from your computer (after setting working directory)
+ufo = pd.read_csv('ufo_sightings.csv')
+
+# Alternatively, specify the file path
 ufo = pd.read_csv('ufo_sightings.csv')
 
 # Alterntively read in the file from the internet
@@ -135,7 +138,7 @@ ufo.fillna('Unknown')
 EXERCISE: Working with drinks data
 '''
 
-# Read drinks.csv into a DataFrame called 'drinks'
+# Read drinks.csv (in the drinks_data folder) into a DataFrame called 'drinks'
 
 
 # Print the first 10 rows
@@ -177,8 +180,8 @@ EXERCISE: Working with drinks data
 SOLUTIONS: Working with drinks data
 '''
 
-# Read drinks.csv into a DataFrame called 'drinks'
-drinks = pd.read_csv('drinks.csv')
+# Read drinks.csv (in the drinks_data folder) into a DataFrame called 'drinks'
+drinks = pd.read_csv('drinks_data/drinks.csv')
 
 # Print the first 10 rows
 drinks.head(10)
@@ -218,7 +221,7 @@ drinks.continent.value_counts()
 # Determine which countries do not have continent designations
 drinks[drinks.continent.isnull()].country
 
-# Due to na_filter = True default option within pd.read_csv()
+# Due to "na_filter = True" default within pd.read_csv()
 
 '''
 Indexing and Slicing Data
@@ -406,6 +409,7 @@ ufo['Weekday'] = ufo.Weekday.map({  0:'Mon', 1:'Tue', 2:'Wed',
 ufo.groupby(['Weekday','Hour']).City.count()
 ufo.groupby(['Weekday','Hour']).City.count().unstack(0) # Make first row level a column
 ufo.groupby(['Weekday','Hour']).City.count().unstack(1) # Make second row level a column
+# Note: .stack transforms columns to rows
 
 # Randomly sample a DataFrame
 idxs = np.random.rand(len(ufo)) < 0.66   # create a Series of booleans
