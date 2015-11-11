@@ -117,14 +117,11 @@ ufo.Shape.value_counts(dropna=False)    # Includes missing values (new in pandas
 ufo.Shape.isnull()       # True if NaN, False otherwise
 ufo.Shape.notnull()      # False if NaN, True otherwise
 ufo.Shape.isnull().sum() # Count the missing values
-ufo.isnull().sum()
-ufo[(ufo.Shape.notnull()) & (ufo.Colors.notnull())]
-
-ufo_shape_not_null = ufo[ufo.Shape.notnull()]
 
 # Find missing values in a DataFrame
 ufo.isnull()
 ufo.isnull().sum()
+ufo[(ufo.Shape.notnull()) & (ufo.Colors.notnull())]
 
 # Drop missing values
 ufo.dropna()             # Drop a row if ANY values are missing
