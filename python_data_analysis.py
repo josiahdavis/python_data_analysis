@@ -55,19 +55,19 @@ ufo.dtypes            # data types of each column
 ufo.values            # underlying numpy array
 ufo.info()            # concise summary
 
-'''
-Filtering and Sorting Data
-'''
-
-# Select a single column
+# Select a single column (a series)
 ufo['State']
 ufo.State                       # This is equivalent
 
-# Select multiple columns
+# Select multiple columns (a dataframe)
 ufo[['State', 'City','Shape Reported']]
-
 my_cols = ['State', 'City', 'Shape Reported']
 ufo[my_cols]                    # This is equivalent
+
+
+'''
+Filtering and Sorting Data
+'''
     
 # Logical filtering
 ufo[ufo.State == 'TX']
@@ -81,11 +81,11 @@ ufo[ufo.City.isin(['Austin','Dallas', 'Houston'])]
 
 # Sorting
 ufo.State.order()                               # only works for a Series
-ufo.sort_index(inplace=True)                    # sort rows by label
-ufo.sort_index(ascending=False, inplace=False)
-ufo.sort_index(by='State')                      # sort rows by specific column
-ufo.sort_index(by=['State', 'Shape Reported'])  # sort by multiple columns
-ufo.sort_index(by=['State', 'Shape Reported'], ascending=[False, True], inplace=True)  # specify sort order
+ufo.sort_index(ascending=False)                 # sort rows by row labels
+ufo.sort_index(ascending=False, inplace=True)   # Sort rows inplace
+ufo.sort_values(by='State')                      # sort rows by specific column
+ufo.sort_values(by=['State', 'Shape Reported'])  # sort by multiple columns
+ufo.sort_values(by=['State', 'Shape Reported'], ascending=[False, True], inplace=True)  # specify sort order
 
 '''
 Modifying Columns
@@ -111,7 +111,7 @@ Handling Missing Values
 # Missing values are often just excluded
 ufo.describe()                          # Excludes missing values
 ufo.Shape.value_counts()                # Excludes missing values
-ufo.Shape.value_counts(dropna=False)    # Includes missing values (new in pandas 0.14.1)
+ufo.Shape.value_counts(dropna=False)    # Includes missing values
 
 # Find missing values in a Series
 ufo.Shape.isnull()       # True if NaN, False otherwise
@@ -293,7 +293,6 @@ ufo.loc['1995',:]
 ufo.loc['1995-01',:]
 ufo.loc['1995-01-01',:]
 
-
 # Access range of times/ranges
 ufo.loc['1995':,:]
 ufo.loc['1995':'1996',:]
@@ -320,7 +319,7 @@ Split-Apply-Combine
 '''
 
 # for each year, calculate the count of sightings
-ufo.groupby('Year').City.count()
+ufo.groupby('Year').size()
 ufo.Year.value_counts()             # Same as before
 
 # for each Shape, calculate the first sighting, last sighting, and range of sightings. 
@@ -344,14 +343,13 @@ ufo.groupby('Shape').apply(lambda x: get_max_year(x))
 
 # Split/combine can occur on multiple columns at the same time
 # For each Weekday / Hour combination, determine a count of sightings
-ufo.groupby(['Weekday','Hour']).City.count()
+ufo.groupby(['Weekday','Hour']).size()
 
 '''
 Merging data
 '''
 
 # Read in population data
-
 pop = pd.read_csv('population.csv')
 pop.head()
 
@@ -399,15 +397,19 @@ ufo[ufo.duplicated()==False]                    # only show unique rows
 ufo_unique = ufo[~ufo.duplicated()]             # only show unique rows
 ufo.duplicated(['State','Time']).sum()          # columns for identifying duplicates
 
-# Map values to other values
-ufo['Weekday'] = ufo.Weekday.map({  0:'Mon', 1:'Tue', 2:'Wed', 
+# Replace all instances of a value (supports 'inplace=True' argument)
+ufo.Shape.replace('DELTA', 'TRIANGLE')   # replace values in a Series
+ufo.replace('PYRAMID', 'TRIANGLE')       # replace values throughout a DataFrame
+
+# Replace with a dictionary
+ufo['Weekday'] = ufo.Weekday.replace({  0:'Mon', 1:'Tue', 2:'Wed', 
                                     3:'Thu', 4:'Fri', 5:'Sat', 
                                     6:'Sun'})
 
 # Pivot rows to columns
-ufo.groupby(['Weekday','Hour']).City.count()
-ufo.groupby(['Weekday','Hour']).City.count().unstack(0) # Make first row level a column
-ufo.groupby(['Weekday','Hour']).City.count().unstack(1) # Make second row level a column
+ufo.groupby(['Weekday','Hour']).size()
+ufo.groupby(['Weekday','Hour']).size().unstack(0) # Make first row level a column
+ufo.groupby(['Weekday','Hour']).size().unstack(1) # Make second row level a column
 # Note: .stack transforms columns to rows
 
 # Randomly sample a DataFrame
@@ -415,31 +417,25 @@ idxs = np.random.rand(len(ufo)) < 0.66   # create a Series of booleans
 train = ufo[idxs]                        # will contain about 66% of the rows
 test = ufo[~idxs]                        # will contain the remaining rows
 
-# Replace all instances of a value (supports 'inplace=True' argument)
-ufo.Shape.replace('DELTA', 'TRIANGLE')   # replace values in a Series
-ufo.replace('PYRAMID', 'TRIANGLE')       # replace values throughout a DataFrame
+
 
 '''
-Plotting
+Advanced Examples (w/Plotting)
 '''
 
 # Plot the number of sightings over time
-ufo.groupby('Year').City.count().plot(  kind='line', 
-                                        color='r', 
-                                        linewidth=2, 
-                                        title='UFO Sightings by year')
-
-# Analysis: Aliens love the X-Files.
+ufo.groupby('Year').size().plot(kind='line', 
+                                color='r', 
+                                linewidth=2, 
+                                title='UFO Sightings by year')
                                         
 # Plot the number of sightings over the day of week and time of day
-ufo.groupby(['Weekday','Hour']).City.count().unstack(0).plot(   kind='line', 
+ufo.groupby(['Weekday','Hour']).size().unstack(0).plot(   kind='line', 
                                                                 linewidth=2,
                                                                 title='UFO Sightings by Time of Day')
 
-# Analysis: Aliens work hard, party hard.
-                                                                
 # Plot the sightings in in July 2014
-ufo[(ufo.Year == 2014) & (ufo.Month == 7)].groupby(['Day']).City.count().plot(  kind='bar',
+ufo[(ufo.Year == 2014) & (ufo.Month == 7)].groupby(['Day']).size().plot(  kind='bar',
                                                         color='b', 
                                                         title='UFO Sightings in July 2014')
                                                         
@@ -448,5 +444,3 @@ ufo_fourth = ufo[(ufo.Year.isin([2011, 2012, 2013, 2014])) & (ufo.Month == 7)]
 ufo_fourth.groupby(['Year', 'Day']).City.count().unstack(0).plot(   kind = 'bar',
                                                                     subplots=True,
                                                                     figsize=(7,9))
-                                                                    
-# Analysis: Aliens are patriotic.
